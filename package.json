@@ -12,6 +12,7 @@
     "lint": "concurrently \"npm:lint:*\"",
     "lint:core": "npm run lint -w @reactpwa/core",
     "lint:cli": "npm run lint -w @reactpwa/cli",
+    "publish": "lerna publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tirth Bodawala <tirthbodawala>",
@@ -22,7 +23,7 @@
   ],
   "devDependencies": {
     "concurrently": "^7.6.0",
-    "lerna": "^6.3.0",
+    "lerna": "^6.4.1",
     "pre-commit": "^1.2.2"
   },
   "pre-commit": {

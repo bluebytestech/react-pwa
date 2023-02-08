@@ -1,4 +1,5 @@
 import zlib from 'zlib';
+// import { inspect } from 'node:util';
 import { PassThrough } from 'node:stream';
 import Cookies from 'universal-cookie';
 import { renderToPipeableStream } from 'react-dom/server';
@@ -14,8 +15,9 @@ import { matchRoutes } from 'react-router-dom';
 import { CookiesProvider } from 'react-cookie';
 import {
   ChunksMap,
-  extractMainScript,
-  extractStyles,
+  extractMainScripts,
+  extractMainStyles,
+  getCssFileContent,
   LazyRouteMatch,
 } from './utils/asset-extract.js';
 import { App } from './components/app.js';
@@ -128,13 +130,23 @@ export const handler = async (
   if (!isBot) {
     compressionStream.write(initialHtml);
   }
-
   if (typeof appRoutes === 'function') {
     routes = await appRoutes(getRequestArgs(request));
   }
   const matchedRoutes = matchRoutes(routes, request.url) as LazyRouteMatch[];
-  const styles = extractStyles(matchedRoutes, chunksMap);
-  const scripts = extractMainScript(chunksMap);
+  let stylesWithContent: { href: string; content: string }[] = [];
+  const styles: string[] = [];
+
+  const mainStyles = extractMainStyles(chunksMap);
+  if (mainStyles?.length) {
+    stylesWithContent = await Promise.all(
+      mainStyles.map(async (mainStyle) => ({
+        content: await getCssFileContent(mainStyle),
+        href: mainStyle,
+      })),
+    );
+  }
+  const mainScripts = extractMainScripts(chunksMap);
 
   // Initialize Cookies
   let universalCookies: Cookies | null = new Cookies(request.cookies);
@@ -155,7 +167,6 @@ export const handler = async (
     setInternalVar(request, key, val);
   };
   const getRequestValue = (key: string, defaultValue: any = null) => getInternalVar(request, key, defaultValue);
-
   // @ts-ignore
   const app = EnableServerSideRender ? <App routes={routes} /> : <></>;
   const stream = renderToPipeableStream(
@@ -167,6 +178,7 @@ export const handler = async (
           <StaticRouter location={request.url}>
             <DataProvider>
               <HeadProvider
+                stylesWithContent={stylesWithContent}
                 styles={styles}
                 preStyles={getRequestValue('headPreStyles', <></>)}
               >
@@ -179,7 +191,7 @@ export const handler = async (
       </ReactPWAContext.Provider>
     </ReactStrictMode>,
     {
-      bootstrapModules: scripts,
+      bootstrapModules: mainScripts,
       onShellReady() {
         if (isBot) return;
         stream.pipe(compressionStream);
@@ -202,9 +214,7 @@ export const handler = async (
          * frontend may work fine, thus the error is not directly visible to developer
          */
         compressionStream.write(
-          `<app-content></app-content><script>SHELL_ERROR=true;</script>${scripts.map(
-            (script) => `<script async type="module" src=${script}></script>`,
-          )}`,
+          '<app-content></app-content><script>SHELL_ERROR=true;</script>',
         );
         compressionStream.end();
       },

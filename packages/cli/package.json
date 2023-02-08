@@ -1,6 +1,6 @@
 {
   "name": "@reactpwa/cli",
-  "version": "1.0.40-alpha.0",
+  "version": "1.0.47-alpha.0",
   "description": "Command line interface for ReactPWA",
   "type": "module",
   "scripts": {
@@ -18,18 +18,18 @@
   "author": "Tirth Bodawala <tirthbodawala@atyantik.com>",
   "license": "ISC",
   "devDependencies": {
-    "@reactpwa/core": "^1.0.40-alpha.0",
-    "eslint": "^8.31.0",
-    "eslint-config-reactpwa": "^1.0.40-alpha.0",
-    "prettier": "^2.8.1",
+    "@reactpwa/core": "^1.0.47-alpha.0",
+    "eslint": "^8.33.0",
+    "eslint-config-reactpwa": "^1.0.46-alpha.0",
+    "prettier": "^2.8.3",
     "tsup": "^6.5.0"
   },
   "dependencies": {
     "chokidar": "^3.5.3",
-    "commander": "^9.4.1",
+    "commander": "^10.0.0",
     "dotenv": "^16.0.3",
     "dotenv-expand": "^10.0.0",
-    "fastify": "^4.11.0",
+    "fastify": "^4.12.0",
     "fs-extra": "^11.1.0",
     "node-fetch": "^3.3.0",
     "webpack": "^5.75.0"
